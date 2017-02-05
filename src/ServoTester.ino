@@ -4,7 +4,7 @@
 #include <Adafruit_SSD1306.h>
 #include <Servo.h>
 #include <FlashStorage.h>
-
+#include <Fonts/FreeSansBold12pt7b.h>
 
 
 #define OLED_RESET 4
@@ -24,7 +24,7 @@ Adafruit_SSD1306 display(OLED_RESET);
 Servo myservo;
 int pos = 90;
 int mode = 0;
-int menuSelect = 0;
+int menuSelect = 1;
 int lastButton = 0;
 int min = 0;
 int max = 180;
@@ -68,14 +68,15 @@ void setup()   {
 
 
   // text display tests
-  display.setTextSize(2);
+  display.setTextSize(1);
   display.setTextColor(WHITE);
-  display.setCursor(0,8);
-  display.println("Servo Tstr");
+  display.setFont(&FreeSansBold12pt7b);
+  display.setCursor(0,24);
+  display.println("ServoTstr");
   display.display();
   delay(500);
   display.clearDisplay();
-
+  display.setFont();
 }
 
 
@@ -98,14 +99,14 @@ void loop() {
     } else {
       display.setTextColor(WHITE, BLACK);
     }
-    display.println("- Sweep Mode");
+    display.println("- Sweep Mode ");
 
     if (menuSelect == 3){
       display.setTextColor(BLACK, WHITE);
     } else {
       display.setTextColor(WHITE, BLACK);
     }
-    display.println("- Ramp Mode");
+    display.println("- Ramp Mode  ");
 
     if (menuSelect == 4){
       display.setTextColor(BLACK, WHITE);
@@ -128,7 +129,7 @@ void loop() {
     updateFlash(pos);
     display.println(pos);
     display.display();
-    if(handleMenu(menuSelect, 0, 5) == 2){
+    if(handleMenu(menuSelect, 1, 5) == 2){
       mode = menuSelect;
     }
     delay(100);
@@ -260,7 +261,7 @@ void loop() {
     delay(1);
 
   }
-  else if (mode == 5){
+  else if (mode == 5){ //Set Min and Max values
     display.clearDisplay();
     display.setTextSize(1);
     display.setCursor(0,0);
