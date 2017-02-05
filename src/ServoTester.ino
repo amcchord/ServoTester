@@ -26,6 +26,9 @@ int pos = 90;
 int mode = 0;
 int menuSelect = 0;
 int lastButton = 0;
+int min = 0;
+int max = 180;
+int subMenu = 0;
 
 //Needed for Key Repeat
 unsigned long lastMillis = 0;
@@ -37,6 +40,8 @@ int direction = 1;
 int tick = 1;
 
 FlashStorage(longTermPOS, int);
+FlashStorage(minFlash, int);
+FlashStorage(maxFlash, int);
 
 
 void setup()   {
@@ -49,6 +54,12 @@ void setup()   {
   display.clearDisplay();
   display.display();
   pos = longTermPOS.read();
+  if (minFlash.read() > 0 && minFlash.read() < 180){
+    min = minFlash.read();
+  }
+  if (maxFlash.read() > 0 && maxFlash.read() < 180){
+    max = maxFlash.read();
+  }
   if (pos < 1 || pos > 180){
     pos = 90;
   }
@@ -103,12 +114,21 @@ void loop() {
     }
     display.println("- Random Mode");
 
+    if (menuSelect == 5){
+      display.setTextColor(BLACK, WHITE);
+    } else {
+      display.setTextColor(WHITE, BLACK);
+    }
+    display.setCursor(107,24);
+    display.println("m/M");
+
+
     display.setCursor(108,0);
     display.setTextColor(WHITE, BLACK);
     updateFlash(pos);
     display.println(pos);
     display.display();
-    if(handleMenu(menuSelect, 0, 4) == 2){
+    if(handleMenu(menuSelect, 0, 5) == 2){
       mode = menuSelect;
     }
     delay(100);
@@ -123,7 +143,7 @@ void loop() {
     printServo();
     display.display();
     myservo.write(pos);
-    if(handleNumber(pos, 0, 180) == 2){
+    if(handleNumber(pos, min, max) == 2){
       mode = 0;
     }
     delay(10);
@@ -155,13 +175,13 @@ void loop() {
     if (tick % speed == 0){
       if (direction == 0){
         pos++;
-        if (pos == 180){
+        if (pos == max){
           direction = 1;
         }
       }
       if (direction == 1){
         pos--;
-        if (pos == 0){
+        if (pos == min){
           direction = 0;
         }
       }
@@ -197,12 +217,12 @@ void loop() {
     if (tick % speed == 0){
       if (direction == 0){
         pos++;
-        if (pos == 180){
+        if (pos == max){
           direction = 1;
         }
       }
       if (direction == 1){
-        pos = 0;
+        pos = min;
         direction = 0;
       }
       tick = 1;
@@ -234,13 +254,49 @@ void loop() {
     myservo.write(pos);
 
     if (tick % speed == 0){
-      pos = random(0,180);
+      pos = random(min,max);
     }
     tick++;
     delay(1);
 
   }
+  else if (mode == 5){
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setCursor(0,0);
+    if (subMenu == 0){
+      display.setTextColor(BLACK,WHITE);
+    }
+    display.print("Min");
+    display.setTextColor(WHITE,BLACK);
+    display.setCursor(107,0);
+    if (subMenu == 1){
+      display.setTextColor(BLACK,WHITE);
+    }
+    display.print("Max");
+    display.setTextColor(WHITE,BLACK);
+    display.setCursor(0,8);
+    display.setTextSize(3);
+    display.print(min);
+    display.setCursor(72,8);
+    display.print(max);
+    display.display();
 
+      if (subMenu == 0){
+        if (handleNumber(min, 0 , 200) == 2){
+          subMenu = 1;
+        }
+      }
+      else if (subMenu == 1){
+        if (handleNumber(max, 0 , 200) == 2){
+          subMenu = 0;
+          maxFlash.write(max);
+          minFlash.write(min);
+          mode = 0;
+          menuSelect = 1;
+        }
+      }
+    }
 }
 
 void printServo(){ //Print the servo angle and Milliseconds

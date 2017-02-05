@@ -25,4 +25,13 @@ Servo ramps from 0 and 180 degrees. Buttons A + B set speed
 ### Random Mode
 
 Servo randomly moves to angles from 0 and 180 degrees. Buttons A + B set speed
-This mode is good for testing gear trains to ensure they don't fail under jerky movement. 
+This mode is good for testing gear trains to ensure they don't fail under jerky movement.
+
+### Min / max
+
+The bounds for servo output can bet set from the m/M menu.
+
+## Features
+
+- The last servo output that was set at the main menu persists across reboots.
+- Easy to wire so servo's can be powered by USB or have the tester powered by the BEC
