@@ -10,33 +10,28 @@
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
 
-#define NUMFLAKES 10
-#define XPOS 0
-#define YPOS 1
-#define DELTAY 2
-
 #define KEY_REPEAT 250 //MS before key repeats;
-
+#define SERVO_PIN 10 // This is the pin for the servo output
 #define BTN_A 9 //Up
 #define BTN_B 6 //Menu
 #define BTN_C 5 //Down
-
-#define LOGO16_GLCD_HEIGHT 16
-#define LOGO16_GLCD_WIDTH  16
 
 #if (SSD1306_LCDHEIGHT != 32)
 #error("Height incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
+//Globals
 Servo myservo;
 int pos = 90;
 int mode = 0;
 int menuSelect = 0;
 int lastButton = 0;
 
+//Needed for Key Repeat
 unsigned long lastMillis = 0;
 unsigned long firstMillis = 0;
 
+//For auto-servo stuff
 int speed = 10;
 int direction = 1;
 int tick = 1;
@@ -51,32 +46,14 @@ void setup()   {
   pinMode(BTN_C, INPUT_PULLUP);
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
   Wire.setClock(1600000);
-
   display.clearDisplay();
   display.display();
-
   pos = longTermPOS.read();
   if (pos < 1 || pos > 180){
     pos = 90;
   }
-  myservo.attach(10);
+  myservo.attach(SERVO_PIN);
   myservo.write(pos);
-
-
-
-  // display.drawPixel(10, 10, WHITE);
-  // display.display();
-  // delay(2000);
-  // display.setTextSize(1);
-  // display.setTextColor(WHITE);
-  // display.setCursor(0,0);
-  // display.println("Hello, world!");
-  // display.setTextColor(BLACK, WHITE); // 'inverted' text
-  // display.println(3.141592);
-  // display.setTextSize(2);
-  // display.setTextColor(WHITE);
-  // display.print("0x"); display.println(0xDEADBEEF, HEX);
-  // display.display();
 
 
   // text display tests
@@ -93,7 +70,7 @@ void setup()   {
 
 void loop() {
 
-  if (mode == 0){
+  if (mode == 0){ //Menu
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -104,24 +81,28 @@ void loop() {
       display.setTextColor(WHITE, BLACK);
     }
     display.println("- Manual Mode");
+
     if (menuSelect == 2){
       display.setTextColor(BLACK, WHITE);
     } else {
       display.setTextColor(WHITE, BLACK);
     }
     display.println("- Sweep Mode");
+
     if (menuSelect == 3){
       display.setTextColor(BLACK, WHITE);
     } else {
       display.setTextColor(WHITE, BLACK);
     }
     display.println("- Ramp Mode");
+
     if (menuSelect == 4){
       display.setTextColor(BLACK, WHITE);
     } else {
       display.setTextColor(WHITE, BLACK);
     }
     display.println("- Random Mode");
+
     display.setCursor(108,0);
     display.setTextColor(WHITE, BLACK);
     updateFlash(pos);
@@ -130,10 +111,9 @@ void loop() {
     if(handleMenu(menuSelect, 0, 4) == 2){
       mode = menuSelect;
     }
-
     delay(100);
   }
-  else if (mode == 1){
+  else if (mode == 1){ //Manual Mode
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -149,7 +129,7 @@ void loop() {
     delay(10);
 
   }
-  else if (mode == 2){
+  else if (mode == 2){ //Sweep Mode
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -191,7 +171,7 @@ void loop() {
     delay(1);
 
   }
-  else if (mode == 3){
+  else if (mode == 3){ //Ramp Mode
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -230,7 +210,7 @@ void loop() {
     tick++;
     delay(1);
   }
-  else if (mode == 4){
+  else if (mode == 4){ //Random Mode
     display.clearDisplay();
     display.setTextSize(1);
     display.setTextColor(WHITE);
@@ -261,19 +241,9 @@ void loop() {
 
   }
 
- //  for (pos = 0; pos <= 180; pos += 1) { // goes from 0 degrees to 180 degrees
- //   // in steps of 1 degree
- //   myservo.write(pos);              // tell servo to go to position in variable 'pos'
- //   delay(15);                       // waits 15ms for the servo to reach the position
- // }
- // for (pos = 180; pos >= 0; pos -= 1) { // goes from 180 degrees to 0 degrees
- //   myservo.write(pos);              // tell servo to go to position in variable 'pos'
- //   delay(15);                       // waits 15ms for the servo to reach the position
- // }
-
 }
 
-void printServo(){
+void printServo(){ //Print the servo angle and Milliseconds
   int servo = myservo.read();
   int servoMS = myservo.readMicroseconds();
 
@@ -295,7 +265,7 @@ void printServo(){
 }
 
 
-int handleNumber(int &myNumber, int min, int max){
+int handleNumber(int &myNumber, int min, int max){ //Update a number using the buttons
   int btn = checkButtons();
   int fastMode = 0;
   if (btn != lastButton || firstMillis == 0){
@@ -341,14 +311,14 @@ int handleNumber(int &myNumber, int min, int max){
   }
 }
 
-void updateFlash(int currentPos){
+void updateFlash(int currentPos){ //Update a number stored in flash ram
   if(longTermPOS.read() != currentPos){
     longTermPOS.write(currentPos);
     delay(250);
   }
 }
 
-int handleMenu(int &menuVal, int min, int max){
+int handleMenu(int &menuVal, int min, int max){ //Update menu items
   int btn = checkButtons();
   if (btn == lastButton && lastButton != 0 && millis() < lastMillis + KEY_REPEAT){
       //Do Nothing
@@ -372,7 +342,7 @@ int handleMenu(int &menuVal, int min, int max){
 }
 
 
-int checkButtons(){
+int checkButtons(){ //Read the button inputs;
   int buttonValue = 0;
   int a = 0;
   int b = 0;
@@ -383,24 +353,22 @@ int checkButtons(){
   c = digitalRead(BTN_C);
 
   if (a == 0){
-    delay(1);
+    delay(1); //Bounce Check
     if (!digitalRead(BTN_A)){
       buttonValue += 1;
     }
   }
   else if (b == 0){
-    delay(1);
+    delay(1); //Bounce Check
     if (!digitalRead(BTN_B)){
       buttonValue += 2;
     }
   }
   else if (c == 0){
-    delay(1);
+    delay(1); //Bounce Check
     if (!digitalRead(BTN_C)){
       buttonValue += 3;
     }
   }
-
   return buttonValue;
-
 }
