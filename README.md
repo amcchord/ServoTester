@@ -2,7 +2,7 @@
 
 Code for an Adafruit Feather M0 and 128x32 Featherwing OLED display.
 
-[[https://github.com/amcchord/ServoTester/blob/master/doc/ServoTester.jpg]]
+![Image of ServoTester](https://github.com/amcchord/ServoTester/blob/master/doc/ServoTester.jpg)
 
 ## Hardware Config
 
